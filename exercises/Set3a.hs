@@ -28,7 +28,9 @@ import Data.List
 --  maxBy head   [1,2,3] [4,5]  ==>  [4,5]
 
 maxBy :: (a -> Int) -> a -> a -> a
-maxBy measure a b = todo
+maxBy measure a b = if measure a > measure b then a else b
+
+
 
 ------------------------------------------------------------------------------
 -- Ex 2: implement the function mapMaybe that takes a function and a
@@ -40,7 +42,9 @@ maxBy measure a b = todo
 --   mapMaybe length (Just "abc") ==> Just 3
 
 mapMaybe :: (a -> b) -> Maybe a -> Maybe b
-mapMaybe f x = todo
+mapMaybe f x = case x of
+    Nothing -> Nothing
+    Just z  -> Just $ f z 
 
 ------------------------------------------------------------------------------
 -- Ex 3: implement the function mapMaybe2 that works like mapMaybe
@@ -54,7 +58,9 @@ mapMaybe f x = todo
 --   mapMaybe2 div (Just 6) Nothing   ==>  Nothing
 
 mapMaybe2 :: (a -> b -> c) -> Maybe a -> Maybe b -> Maybe c
-mapMaybe2 f x y = todo
+mapMaybe2 _ Nothing _ = Nothing
+mapMaybe2 _ _ Nothing = Nothing
+mapMaybe2 f (Just x) (Just y) = Just (f x y) 
 
 ------------------------------------------------------------------------------
 -- Ex 4: define the functions firstHalf and palindrome so that
@@ -76,9 +82,15 @@ mapMaybe2 f x y = todo
 palindromeHalfs :: [String] -> [String]
 palindromeHalfs xs = map firstHalf (filter palindrome xs)
 
-firstHalf = todo
+firstHalf :: String -> String
+firstHalf s =
+    let len = length s 
+        half = len  `div` 2
+    in if even len then take half s
+       else take (half + 1) s
 
-palindrome = todo
+palindrome :: String -> Bool
+palindrome xs = xs == reverse xs
 
 ------------------------------------------------------------------------------
 -- Ex 5: Implement a function capitalize that takes in a string and
@@ -96,7 +108,10 @@ palindrome = todo
 --   capitalize "goodbye cruel world" ==> "Goodbye Cruel World"
 
 capitalize :: String -> String
-capitalize = todo
+capitalize str = unwords $ map capitalizeFirst $ words str
+
+capitalizeFirst :: String -> String
+capitalizeFirst str = toUpper (head str) : tail str
 
 ------------------------------------------------------------------------------
 -- Ex 6: powers k max should return all the powers of k that are less
@@ -113,7 +128,14 @@ capitalize = todo
 --   * the function takeWhile
 
 powers :: Int -> Int -> [Int]
-powers k max = todo
+powers k max =  reverse $ calculate k 0 max []
+
+calculate :: Int -> Int -> Int -> [Int] -> [Int]
+calculate k n max pwrs = 
+    let p = k ^ n 
+    in if p > max then pwrs
+       else calculate k (n + 1) max (p : pwrs)
+          
 
 ------------------------------------------------------------------------------
 -- Ex 7: implement a functional while loop. While should be a function
@@ -136,7 +158,10 @@ powers k max = todo
 --     ==> Avvt
 
 while :: (a->Bool) -> (a->a) -> a -> a
-while check update value = todo
+while check update value = 
+    let c = check value
+    in  if c then while check update (update value)
+        else value 
 
 ------------------------------------------------------------------------------
 -- Ex 8: another version of a while loop. This time, the check
@@ -153,7 +178,9 @@ while check update value = todo
 --   whileRight (step 1000) 3  ==> 1536
 
 whileRight :: (a -> Either b a) -> a -> b
-whileRight f x = todo
+whileRight f x = case f x of
+    Left s -> s
+    Right g -> whileRight f g
 
 -- for the whileRight examples:
 -- step k x doubles x if it's less than k
@@ -172,7 +199,8 @@ step k x = if x<k then Right (2*x) else Left x
 -- Hint! This is a great use for list comprehensions
 
 joinToLength :: Int -> [String] -> [String]
-joinToLength = todo
+joinToLength _ [] = []
+joinToLength l xs = filter (\z -> length z == l) [x ++ y | x <- xs, y <- xs]
 
 ------------------------------------------------------------------------------
 -- Ex 10: implement the operator +|+ that returns a list with the first
@@ -186,7 +214,16 @@ joinToLength = todo
 --   [] +|+ [True]        ==> [True]
 --   [] +|+ []            ==> []
 
+--(+|+) :: [String] -> [String] -> [String]
+(+|+) :: [a] -> [a] -> [a]
+xs +|+ ys = joiner xs ys
 
+--joiner :: [String] -> [String] -> [String]
+joiner :: [a] -> [a] -> [a]
+joiner [] [] = []
+joiner (x:xs) [] = [x]
+joiner [] (y:ys) = [y]
+joiner xs ys = [head xs, head ys]
 ------------------------------------------------------------------------------
 -- Ex 11: remember the lectureParticipants example from Lecture 2? We
 -- used a value of type [Either String Int] to store some measurements
